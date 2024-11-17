@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kuber-hw-02-deployment
+  namespace: homework
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      # https://kubernetes.io/ru/docs/concepts/scheduling-eviction/assign-pod-node/
+      # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: homework
+                    operator: In
+                    values:
+                      - "true"
+      volumes:
+        - name: kuber-hw-02-volume
+          emptyDir: {}
+        - name: nginx-conf-volume
+          emptyDir: {}
+      initContainers:
+        - name: init-container
+          image: busybox:latest
+          command: ['sh', '-c', 'wget -O /init/index.html https://example.com']
+          volumeMounts:
+            - mountPath: /init
+              name: kuber-hw-02-volume
+        - name: create-nginx-config
+          image: busybox:latest
+          # записываем конфигурацию nginx
+          command: ["sh", "-c", "echo 'server { listen 80; root /homework;}' > /nginx-conf/nginx.conf"]
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: /nginx-conf
+              name: nginx-conf-volume
+      containers:
+        - name: nginx
+          image: nginx
+          volumeMounts:
+            - mountPath: /homework
+              name: kuber-hw-02-volume
+            - mountPath: /etc/nginx/conf.d
+              name: nginx-conf-volume
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /index.html
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /index.html
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ['sh', '-c', 'rm -f /homework/index.html']
+      restartPolicy: Always
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+
