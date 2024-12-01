@@ -1,0 +1,8 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: kuber-hw-04-storageclass
+  namespace: homework
+provisioner: k8s.io/minikube-hostpath
+reclaimPolicy: Retain
+
