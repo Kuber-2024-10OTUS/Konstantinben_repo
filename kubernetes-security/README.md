@@ -16,8 +16,8 @@ kubectl apply -f ./
 ```
 
 #### Проверяем видимость метрик
-![Метрики сохранились в поде](images/kubernetes-security/metrics_stored_in_pv.jpg)
-![Метрики доступны в брайзере](images/kubernetes-security/metrics_available_in_the_browser.jpg)
+![Метрики сохранились в поде](../images/kubernetes-security/metrics_stored_in_pv.jpg)
+![Метрики доступны в брайзере](../images/kubernetes-security/metrics_available_in_the_browser.jpg)
 
 #### Создадим для сервис аккаунта cd токен со сроком действия 1 день и сохраним его в файл token
 ```bash
@@ -55,4 +55,4 @@ kubectl --kubeconfig=cd-kubeconfig get pods
 # не отдает поды. поскольку в нейспейсе default ничего нет
 kubectl get pods
 ```
-![Конфиг успешно применен](images/kubernetes-security/minikube_config_applied.jpg)
+![Конфиг успешно применен](../images/kubernetes-security/minikube_config_applied.jpg)

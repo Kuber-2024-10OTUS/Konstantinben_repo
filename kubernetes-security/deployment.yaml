@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hw-deployment
+  namespace: homework
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      serviceAccountName: monitoring
+      # https://kubernetes.io/ru/docs/concepts/scheduling-eviction/assign-pod-node/
+      # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: homework
+                    operator: In
+                    values:
+                      - "true"
+      volumes:
+        - name: hw-pv
+          persistentVolumeClaim:
+            claimName: hw-pvc
+        - name: hw-metrics-volume
+          emptyDir: {}
+        - name: hw-configmap
+          configMap:
+            name: hw-configmap
+        - name: nginx-conf-volume
+          configMap:
+            name: hw-configmap-nginx
+            optional: false
+      initContainers:
+        - name: init-container
+          image: busybox:latest
+          command: ['sh', '-c', 'wget -O /init/index.html https://example.com']
+          volumeMounts:
+            - mountPath: /init
+              name: hw-pv
+        - name: init-container-metrics
+          image: curlimages/curl:latest
+          env:
+            - name: TOKEN
+              value: /var/run/secrets/kubernetes.io/serviceaccount/token
+            - name: CA_CERT
+              value: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            - name: KUBEAPI
+              value: https://kubernetes.default.svc
+            - name: NAMESPACE
+              value: /var/run/secrets/kubernetes.io/serviceaccount/namespace
+          command: [ 'sh', '-c' ]
+          args: [ 'curl --cacert ${CA_CERT} --header "Authorization: Bearer $(cat ${TOKEN})" -X GET ${KUBEAPI}/apis/metrics.k8s.io/v1beta1/namespaces/"$(cat ${NAMESPACE})"/pods -o /init/metrics.html' ]
+#          args: [ 'curl --cacert ${CACERT} --header "Authorization: Bearer $(cat ${TOKEN})" -X GET ${KUBEAPI}/metrics -o /init/metrics.html' ]
+          volumeMounts:
+            - mountPath: /init
+              name: hw-pv
+      containers:
+        - name: nginx
+          image: nginx
+          volumeMounts:
+            - mountPath: /homework/conf/
+              name: hw-configmap
+            - mountPath: /homework
+              name: hw-pv
+            - mountPath: /etc/nginx/conf.d
+              name: nginx-conf-volume
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /index.html
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /index.html
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+#          lifecycle:
+#            preStop:
+#              exec:
+#                command: ['sh', '-c', 'rm -f /homework/index.html', 'rm -f /homework/metrics.html']
+##                  - "/bin/sh"
+##                  - "-c"
+##                  - |
+##                    rm -f /homework/index.html
+##                    rm -f /homework/metrics.html
+      restartPolicy: Always
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+
