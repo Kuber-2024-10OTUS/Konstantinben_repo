@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "name.prefix" . }}configmap
+  namespace: {{ .Values.common.namespace }}
+data:
+  file: |
+    key1=value1
+    key2=value2
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "name.prefix" . }}configmap-nginx
+  namespace: {{ .Values.common.namespace }}
+data:
+  default.conf: |
+    server {
+        server_name  localhost;
+        listen 80;
+        root /homework;
+        location / {
+            root   /homework;
+        }
+        location /conf {
+            root /homework/conf;
+        }
+    }

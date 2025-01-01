@@ -1,4 +1,4 @@
-# Репозиторий для выполнения домашних заданий курса "Инфраструктурная платформа на основе Kubernetes-2024-10" 
+# Репозиторий для выполнения домашних заданий курса "Инфраструктурная платформа на основе Kubernetes-2024-10"
 
 #### Установим ingress controller и metrics-server:
 ```bash
@@ -54,12 +54,12 @@ NOTES:
 ```
 
 #### Проверяем работу приложения
-![Поды в Lens](images/kubernetes-templating/lens_pods_via_helm.jpg)
-![Браузер - эндпоинт метрик](images/kubernetes-templating/browser__homework.otusmetrics.html.jpg)
+![Поды в Lens](../images/kubernetes-templating/lens_pods_via_helm.jpg)
+![Браузер - эндпоинт метрик](../images/kubernetes-templating/browser__homework.otusmetrics.html.jpg)
 
 #### Перейдем в директорию hw-kafka и применим helmfile
 ```bash
 helmfile apply
 ```
-![Вывод консоли 1](images/kubernetes-templating/kafka___helmfile_apply_begin.jpg)
-![Вывод консоли 2](images/kubernetes-templating/kafka___helmfile_apply.jpg)
+![Вывод консоли 1](../images/kubernetes-templating/kafka___helmfile_apply_begin.jpg)
+![Вывод консоли 2](../images/kubernetes-templating/kafka___helmfile_apply.jpg)

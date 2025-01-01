@@ -1,0 +1,62 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "name.prefix" . }}ingress-root
+  namespace: {{ .Values.common.namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ .Values.common.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "name.prefix" . }}service
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "name.prefix" . }}ingress-conf
+  namespace: {{ .Values.common.namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /conf/file/
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ .Values.common.host }}
+      http:
+        paths:
+          - path: /conf/file
+            pathType: Exact
+            backend:
+              service:
+                name: {{ include "name.prefix" . }}service
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "name.prefix" . }}ingress-homepage
+  namespace: {{ .Values.common.namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ .Values.common.host }}
+      http:
+        paths:
+          - path: /homepage(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "name.prefix" . }}service
+                port:
+                  number: 80
