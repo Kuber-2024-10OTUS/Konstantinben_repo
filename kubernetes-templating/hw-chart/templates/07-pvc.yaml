@@ -9,5 +9,5 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  storageClassName: {{ .Values.common.namespace }}storageclass
+  storageClassName: {{ include "name.prefix" . }}storageclass
   #storageClassName: default
