@@ -1,0 +1,14 @@
+replicaCount: 1
+
+image:
+  tag: latest
+
+listeners:
+  client:
+    protocol: PLAINTEXT
+  interbroker:
+    protocol: PLAINTEXT
+security:
+  protocol: PLAINTEXT
+  sasl:
+    enabled: false

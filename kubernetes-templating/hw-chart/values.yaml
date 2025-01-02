@@ -1,0 +1,29 @@
+common:
+  namespace: homework
+  host: homework.otus
+  nodeAffinitykey: homework
+
+app:
+  name: nginx
+  container: nginx
+  image: nginx
+  tag: latest
+  containerPort: 80
+  replicas: 3
+  probes:
+    liveness: true
+    readiness: true
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+
+site:
+  container: init-container
+  image: busybox
+  tag: latest
+
+metrics:
+  container: init-container-metrics
+  image: curlimages/curl
+  tag: latest

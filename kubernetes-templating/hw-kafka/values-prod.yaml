@@ -1,0 +1,17 @@
+replicaCount: 5
+
+image:
+  tag: 3.5.2
+
+listeners:
+  client:
+    protocol: SASL_PLAINTEXT
+  interbroker:
+    protocol: SASL_PLAINTEXT
+
+security:
+  protocol: SASL_PLAINTEXT
+  sasl:
+    mechanism: PLAIN
+    username: "kafka_user"
+    password: "kafka_password"

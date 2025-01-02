@@ -1,0 +1,26 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "name.prefix" . }}binding-cd-admin
+  namespace: {{ .Values.common.namespace }}
+subjects:
+  - kind: ServiceAccount
+    namespace: {{ .Values.common.namespace }}
+    name: {{ include "name.prefix" . }}cd
+roleRef:
+  kind: Role
+  name: {{ include "name.prefix" . }}admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "name.prefix" . }}binding-monitoring-metrics
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "name.prefix" . }}monitoring
+    namespace: {{ .Values.common.namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "name.prefix" . }}metrics
+  apiGroup: rbac.authorization.k8s.io
