@@ -5,7 +5,18 @@
 \
 [./kubernetes-templating/README.md](./kubernetes-templating/README.md)  - Шаблонизация манифестов приложения, использование Helm. Установка community Helm charts \
 \
-[./kubernetes-operators/README.md](./kubernetes-operators/README.md) - Создание собственного CRD
+[./kubernetes-operators/README.md](./kubernetes-operators/README.md) - Создание собственного CRD \
+\
+[./kubernetes-monitoring/README.md](./kubernetes-monitoring/README.md) - Мониторинг приложения в кластере
+
+
+
+#### Общее:
+#### Добавим HELM репозитории:
+`helm repo add prometheus-community https://prometheus-community.github.io/helm-charts` <br/>
+`helm repo add stable https://charts.helm.sh/stable` <br/>
+`helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx` <br/>
+`helm repo update` <br/>
 
 #### Установим ingress controller и metrics-server:
 ```bash
