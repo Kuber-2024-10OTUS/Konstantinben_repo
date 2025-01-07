@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "name.prefix" . }}service
+  namespace: {{ .Values.common.namespace }}
+  labels:
+    {{- include "app.service.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "app.service.labels" . | nindent 4 }}
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80

@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "name.prefix" . }}deployment
+  namespace: {{ .Values.common.namespace }}
+  labels:
+    {{- include "app.service.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.app.replicas }}
+  selector:
+    matchLabels:
+      {{- include "app.service.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "app.service.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "name.prefix" . }}monitoring
+      # https://kubernetes.io/ru/docs/concepts/scheduling-eviction/assign-pod-node/
+      # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+      {{- if .Values.common.nodeAffinitykey }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: {{ .Values.common.nodeAffinitykey }}
+                    operator: In
+                    values:
+                      - "true"
+      {{- end }}
+      volumes:
+        - name: {{ include "name.prefix" . }}pv
+          persistentVolumeClaim:
+            claimName: {{ include "name.prefix" . }}pvc
+        - name: {{ include "name.prefix" . }}metrics-volume
+          emptyDir: {}
+        - name: {{ include "name.prefix" . }}configmap
+          configMap:
+            name: {{ include "name.prefix" . }}configmap
+        - name: {{ include "name.prefix" . }}nginx-conf-volume
+          configMap:
+            name: {{ include "name.prefix" . }}configmap-nginx
+            optional: false
+      initContainers:
+        - name: {{ include "name.prefix" . }}{{ .Values.site.container }}
+          image: {{ .Values.site.image }}:{{ .Values.site.tag }}
+          command: ['sh', '-c', 'wget -O /init/index.html https://example.com']
+          volumeMounts:
+            - mountPath: /init
+              name: {{ include "name.prefix" . }}pv
+        - name: {{ include "name.prefix" . }}{{ .Values.metrics.container }}
+          image: {{ .Values.metrics.image }}:{{ .Values.metrics.tag }}
+          env:
+            - name: TOKEN
+              value: /var/run/secrets/kubernetes.io/serviceaccount/token
+            - name: CA_CERT
+              value: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            - name: KUBEAPI
+              value: https://kubernetes.default.svc
+            - name: NAMESPACE
+              value: /var/run/secrets/kubernetes.io/serviceaccount/namespace
+          command: [ 'sh', '-c' ]
+          args: [ 'curl --cacert ${CA_CERT} --header "Authorization: Bearer $(cat ${TOKEN})" -X GET ${KUBEAPI}/apis/metrics.k8s.io/v1beta1/namespaces/"$(cat ${NAMESPACE})"/pods -o /init/metrics.html' ]
+#          args: [ 'curl --cacert ${CACERT} --header "Authorization: Bearer $(cat ${TOKEN})" -X GET ${KUBEAPI}/metrics -o /init/metrics.html' ]
+          volumeMounts:
+            - mountPath: /init
+              name: {{ include "name.prefix" . }}pv
+      containers:
+        - name: {{ .Values.app.container }}
+          image: {{ .Values.app.image }}:{{ .Values.app.tag }}
+          volumeMounts:
+            - mountPath: /homework/conf/
+              name: {{ include "name.prefix" . }}configmap
+            - mountPath: /homework
+              name: {{ include "name.prefix" . }}pv
+            - mountPath: /etc/nginx/conf.d
+              name: {{ include "name.prefix" . }}nginx-conf-volume
+          ports:
+            - containerPort: {{ .Values.app.containerPort }}
+          {{- if .Values.app.probes.liveness }}
+          livenessProbe:
+            httpGet:
+              path: /index.html
+              port: {{ .Values.app.containerPort }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          {{- if .Values.app.probes.readiness }}
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /index.html
+              port: {{ .Values.app.containerPort }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          {{- end }}
+#          lifecycle:
+#            preStop:
+#              exec:
+#                command: ['sh', '-c', 'rm -f /homework/index.html', 'rm -f /homework/metrics.html']
+##                  - "/bin/sh"
+##                  - "-c"
+##                  - |
+##                    rm -f /homework/index.html
+##                    rm -f /homework/metrics.html
+      restartPolicy: Always
+  {{- with .Values.app.strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+

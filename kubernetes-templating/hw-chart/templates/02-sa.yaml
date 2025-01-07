@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "name.prefix" . }}monitoring
+  namespace: {{ .Values.common.namespace }}
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "name.prefix" . }}cd
+  namespace: {{ .Values.common.namespace }}

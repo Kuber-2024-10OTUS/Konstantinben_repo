@@ -1,0 +1,27 @@
+repositories:
+  - name: bitnamicharts
+    url: registry-1.docker.io/bitnamicharts
+    oci: true
+#  - name: bitnami
+#    url: https://charts.bitnami.com/bitnami
+
+releases:
+  - name: kafka-prod
+    namespace: prod
+    createNamespace: true
+#    chart: bitnami/kafka
+    chart: bitnamicharts/kafka
+    # kafka v3.5.1 https://hub.docker.com/layers/bitnamicharts/kafka/25.3.5/images/sha256-6db321ade99027e49c2f73e0216cc6bfccc82d20f2404e62ba2457f72eeb39e1
+    # kafka v3.6.0 https://hub.docker.com/layers/bitnamicharts/kafka/26.0.0/images/sha256-86c0f492e91b5c7e13ea26b24a3a44ebb8d5fc8d65d81eaa48dd17fd086a7924
+    version: 25.3.5
+    values:
+      - values-prod.yaml
+  - name: kafka
+    namespace: dev
+    createNamespace: true
+#    chart: bitnami/kafka
+    chart: bitnamicharts/kafka
+    version: 31.1.1
+    # kafka v3.9.0 https://hub.docker.com/layers/bitnamicharts/kafka/31.1.1/images/sha256-a5d106faf6504cd5602f4d3357a3b05566159ade4e4d3bb92e8b69ec055147f5
+    values:
+      - values-dev.yaml
